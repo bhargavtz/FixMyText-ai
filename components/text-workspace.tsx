@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Action, Tone } from "@/lib/validation/rewrite-schema";
-import { DEFAULT_MODEL_ID } from "@/lib/ai/models";
+import type { ModelOption } from "@/lib/ai/model-catalog";
 import ModelSelector from "@/components/model-selector";
 
 const TONES: { value: Tone; label: string }[] = [
@@ -10,18 +10,55 @@ const TONES: { value: Tone; label: string }[] = [
   { value: "friendly", label: "Friendly" },
   { value: "simple", label: "Simple" },
   { value: "confident", label: "Confident" },
+  { value: "formal", label: "Formal" },
+  { value: "casual", label: "Casual" },
+  { value: "persuasive", label: "Persuasive" },
+  { value: "empathetic", label: "Empathetic" },
 ];
 
 const ACTIONS: { value: Action; label: string }[] = [
   { value: "rewrite", label: "Rewrite" },
   { value: "fix-grammar", label: "Fix grammar" },
   { value: "make-shorter", label: "Make shorter" },
+  { value: "expand", label: "Expand" },
+  { value: "summarize", label: "Summarize" },
+  { value: "bullet-points", label: "Bullet points" },
+  { value: "simplify", label: "Simplify" },
 ];
 
-const EXAMPLES = [
-  "hey, i wanted to ask if you can send me the invoice today because we need it",
-  "Just checking in to see if you had a chance to review my application. Thanks!",
-  "Can we move the meeting to tomorrow? I have a conflict this afternoon.",
+const EXAMPLES: { label: string; text: string }[] = [
+  {
+    label: "Invoice email",
+    text: "hey, i wanted to ask if you can send me the invoice today because we need it",
+  },
+  {
+    label: "Job application",
+    text: "i think im a good fit for this job because i have 5 years experience and i learn fast",
+  },
+  {
+    label: "Project update",
+    text: "quick update on the project, we finished the design and now working on the api, should be done friday",
+  },
+  {
+    label: "Customer support",
+    text: "sorry for the delay, we are looking into your issue and will get back to you soon",
+  },
+  {
+    label: "Apology",
+    text: "i missed our meeting yesterday, i am sorry, can we reschedule",
+  },
+  {
+    label: "LinkedIn post",
+    text: "excited to share that i started a new job as a product manager at a startup",
+  },
+  {
+    label: "Follow-up",
+    text: "just following up on my last email, let me know if you need anything else",
+  },
+  {
+    label: "Student email",
+    text: "hi professor, i was absent yesterday, can you tell me what i missed",
+  },
 ];
 
 const MAX = 5000;
@@ -30,16 +67,24 @@ function wordCount(s: string): number {
   return s.trim() ? s.trim().split(/\s+/).length : 0;
 }
 
-export default function TextWorkspace() {
+type Props = {
+  models: ModelOption[];
+  defaultModel: string;
+};
+
+export default function TextWorkspace({ models, defaultModel }: Props) {
   const [text, setText] = useState("");
   const [tone, setTone] = useState<Tone>("professional");
   const [action, setAction] = useState<Action>("rewrite");
   const [model, setModel] = useState<string>(() => {
-    if (typeof window === "undefined") return DEFAULT_MODEL_ID;
+    const fallback =
+      models.find((m) => m.id === defaultModel)?.id ?? models[0]?.id ?? defaultModel;
+    if (typeof window === "undefined") return fallback;
     try {
-      return window.localStorage.getItem("fmx:model") || DEFAULT_MODEL_ID;
+      const saved = window.localStorage.getItem("fmx:model");
+      return saved && models.some((m) => m.id === saved) ? saved : fallback;
     } catch {
-      return DEFAULT_MODEL_ID;
+      return fallback;
     }
   });
   const [result, setResult] = useState("");
@@ -58,6 +103,7 @@ export default function TextWorkspace() {
 
   const charCount = text.length;
   const overLimit = charCount > MAX;
+  const resultModelName = models.find((m) => m.id === resultModel)?.name;
 
   async function handleImprove() {
     setError("");
@@ -145,17 +191,20 @@ export default function TextWorkspace() {
           <div className="mt-6 h-px w-24 bg-border" />
         </section>
 
-        <div className="mb-6 flex flex-wrap gap-2">
-          {EXAMPLES.map((ex, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setText(ex)}
-              className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-muted transition hover:border-accent hover:text-foreground"
-            >
-              Try example {i + 1}
-            </button>
-          ))}
+        <div className="mb-6">
+          <p className="mb-2 text-sm font-medium text-foreground">Start from an example</p>
+          <div className="flex flex-wrap gap-2">
+            {EXAMPLES.map((ex) => (
+              <button
+                key={ex.label}
+                type="button"
+                onClick={() => setText(ex.text)}
+                className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-muted transition hover:border-accent hover:text-foreground"
+              >
+                {ex.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -187,7 +236,7 @@ export default function TextWorkspace() {
             </div>
 
             <div className="mt-6">
-              <ModelSelector value={model} onChange={setModel} disabled={loading} />
+              <ModelSelector models={models} value={model} onChange={setModel} disabled={loading} />
             </div>
 
             <div className="mt-6">
@@ -201,7 +250,7 @@ export default function TextWorkspace() {
                     aria-checked={tone === t.value}
                     onClick={() => setTone(t.value)}
                     className={
-                      "rounded-full border px-4 py-1.5 text-sm font-medium transition " +
+                      "rounded-full border px-3.5 py-1.5 text-sm font-medium transition " +
                       (tone === t.value
                         ? "border-accent bg-accent text-white"
                         : "border-border bg-surface text-foreground hover:border-accent/40")
@@ -215,7 +264,7 @@ export default function TextWorkspace() {
 
             <div className="mt-6">
               <p className="mb-2 text-sm font-medium text-foreground">Action</p>
-              <div className="inline-flex rounded-2xl border border-border bg-background p-1" role="radiogroup" aria-label="Action">
+              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Action">
                 {ACTIONS.map((a) => (
                   <button
                     key={a.value}
@@ -224,10 +273,10 @@ export default function TextWorkspace() {
                     aria-checked={action === a.value}
                     onClick={() => setAction(a.value)}
                     className={
-                      "rounded-xl px-4 py-1.5 text-sm font-medium transition " +
+                      "rounded-xl border px-3.5 py-1.5 text-sm font-medium transition " +
                       (action === a.value
-                        ? "bg-surface text-foreground shadow-sm"
-                        : "text-muted hover:text-foreground")
+                        ? "border-foreground bg-foreground text-white"
+                        : "border-border bg-surface text-foreground hover:border-accent/40")
                     }
                   >
                     {a.label}
@@ -275,7 +324,9 @@ export default function TextWorkspace() {
             <div className="mb-2 flex items-center justify-between">
               <p className="text-sm font-medium text-foreground">
                 Improved text
-                {resultModel ? <span className="ml-2 text-xs font-normal text-muted">via {resultModel}</span> : null}
+                {resultModelName ? (
+                  <span className="ml-2 text-xs font-normal text-muted">via {resultModelName}</span>
+                ) : null}
               </p>
               <button
                 type="button"

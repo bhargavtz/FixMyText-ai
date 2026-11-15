@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { rewriteRequestSchema } from "@/lib/validation/rewrite-schema";
 import { rewriteText } from "@/lib/ai/rewrite";
-import { getModel } from "@/lib/ai/models";
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -19,11 +18,13 @@ export async function POST(request: Request) {
 
   try {
     const { result, modelId } = await rewriteText(parsed.data);
-    const model = getModel(modelId);
-    return NextResponse.json({ result, model: model?.label ?? modelId });
+    return NextResponse.json({ result, model: modelId });
   } catch (err) {
     console.error("rewrite failed", err);
-    const message = err instanceof Error ? err.message : "The text could not be improved. Please try again.";
+    const message =
+      err instanceof Error
+        ? err.message
+        : "The text could not be improved. Please try again.";
     return NextResponse.json({ error: message }, { status: 502 });
   }
 }
