@@ -26,11 +26,11 @@ Open http://localhost:3000.
 
 See `.env.example`. Server secrets must never use the `NEXT_PUBLIC_` prefix.
 
-- `AI_PROVIDER` — `anthropic` (default) or `openai`
-- `ANTHROPIC_API_KEY` — required when provider is anthropic
-- `OPENAI_API_KEY` — required when provider is openai
-- `AI_MODEL` — optional model override
-- `AI_BASE_URL` — optional OpenAI-compatible base URL
+- `AI_PROVIDER` — `openrouter` (default)
+- `OPENROUTER_API_KEY` — required for real rewrites
+- `OPENROUTER_BASE_URL` — optional, defaults to https://openrouter.ai/api/v1
+- `DEFAULT_MODEL` — optional default model id (see `lib/ai/models.ts`)
+- `APP_URL` — your app URL (used for OpenRouter ranking headers)
 
 If no API key is configured, the app runs in **demo mode** and returns the
 input unchanged with a demo label.

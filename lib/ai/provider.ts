@@ -1,4 +1,5 @@
 import type { Action, Tone } from "@/lib/validation/rewrite-schema";
+import { getModel, isOpenRouterConfigured, DEFAULT_MODEL_ID } from "@/lib/ai/models";
 
 const MAX_TOKENS = 1024;
 const TIMEOUT_MS = 30_000;
@@ -26,69 +27,43 @@ function buildSystemPrompt(tone: Tone, action: Action): string {
 }
 
 export function isDemoMode(): boolean {
-  const provider = (process.env.AI_PROVIDER || "anthropic").toLowerCase();
-  if (provider === "anthropic") return !process.env.ANTHROPIC_API_KEY;
-  if (provider === "openai") return !process.env.OPENAI_API_KEY;
-  // openai-compatible
-  return !process.env.OPENAI_API_KEY && !process.env.AI_API_KEY;
+  return !isOpenRouterConfigured();
 }
 
 export async function rewriteText(input: {
   text: string;
   tone: Tone;
   action: Action;
-}): Promise<string> {
-  const provider = (process.env.AI_PROVIDER || "anthropic").toLowerCase();
-  const model = process.env.AI_MODEL || (provider === "anthropic" ? "claude-3-5-haiku-latest" : "gpt-4o-mini");
+  model?: string;
+}): Promise<{ result: string; modelId: string }> {
+  const requestedId = input.model || DEFAULT_MODEL_ID;
+  const model = getModel(requestedId) || getModel(DEFAULT_MODEL_ID) || getModel("gpt-4o-mini")!;
   const system = buildSystemPrompt(input.tone, input.action);
 
   if (isDemoMode()) {
-    // Demo mode: no credentials. Return a clearly-labeled placeholder so the
-    // UI remains testable without a live AI call.
-    return `[Demo mode — configure an API key for real rewrites]\n${input.text.trim()}`;
+    return {
+      result: `[Demo mode — configure OPENROUTER_API_KEY for real rewrites]\n${input.text.trim()}`,
+      modelId: model.id,
+    };
   }
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-  try {
-    if (provider === "anthropic") {
-      const apiKey = process.env.ANTHROPIC_API_KEY!;
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          "x-api-key": apiKey,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify({
-          model,
-          max_tokens: MAX_TOKENS,
-          system,
-          messages: [{ role: "user", content: input.text }],
-        }),
-        signal: controller.signal,
-      });
-      if (!res.ok) {
-        throw new Error(`Anthropic request failed: ${res.status}`);
-      }
-      const data = (await res.json()) as { content?: { type: string; text?: string }[] };
-      const text = data.content?.find((c) => c.type === "text")?.text?.trim();
-      if (!text) throw new Error("Empty response from provider.");
-      return text;
-    }
+  const baseUrl = (process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1").replace(/\/$/, "");
+  const appUrl = process.env.APP_URL || "http://localhost:3000";
 
-    // OpenAI / OpenAI-compatible
-    const apiKey = process.env.OPENAI_API_KEY || process.env.AI_API_KEY;
-    const baseUrl = (process.env.AI_BASE_URL || "https://api.openai.com/v1").replace(/\/$/, "");
+  try {
     const res = await fetch(`${baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        authorization: `Bearer ${apiKey}`,
+        authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "HTTP-Referer": appUrl,
+        "X-Title": "FixMyText AI",
       },
       body: JSON.stringify({
-        model,
+        model: model.openRouterId,
         max_tokens: MAX_TOKENS,
         messages: [
           { role: "system", content: system },
@@ -97,13 +72,20 @@ export async function rewriteText(input: {
       }),
       signal: controller.signal,
     });
+
     if (!res.ok) {
-      throw new Error(`OpenAI-compatible request failed: ${res.status}`);
+      const status = res.status;
+      if (status === 401) throw new Error("Invalid OpenRouter API key.");
+      if (status === 402) throw new Error("OpenRouter credits exhausted.");
+      if (status === 429) throw new Error("Rate limit reached. Please try again shortly.");
+      if (status === 404) throw new Error("Selected model is unavailable.");
+      throw new Error(`OpenRouter request failed: ${status}`);
     }
+
     const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
     const text = data.choices?.[0]?.message?.content?.trim();
     if (!text) throw new Error("Empty response from provider.");
-    return text;
+    return { result: text, modelId: model.id };
   } finally {
     clearTimeout(timeout);
   }

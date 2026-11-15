@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Action, Tone } from "@/lib/validation/rewrite-schema";
+import { DEFAULT_MODEL_ID } from "@/lib/ai/models";
+import ModelSelector from "@/components/model-selector";
 
 const TONES: { value: Tone; label: string }[] = [
   { value: "professional", label: "Professional" },
@@ -16,16 +18,43 @@ const ACTIONS: { value: Action; label: string }[] = [
   { value: "make-shorter", label: "Make shorter" },
 ];
 
+const EXAMPLES = [
+  "hey, i wanted to ask if you can send me the invoice today because we need it",
+  "Just checking in to see if you had a chance to review my application. Thanks!",
+  "Can we move the meeting to tomorrow? I have a conflict this afternoon.",
+];
+
 const MAX = 5000;
+
+function wordCount(s: string): number {
+  return s.trim() ? s.trim().split(/\s+/).length : 0;
+}
 
 export default function TextWorkspace() {
   const [text, setText] = useState("");
   const [tone, setTone] = useState<Tone>("professional");
   const [action, setAction] = useState<Action>("rewrite");
+  const [model, setModel] = useState<string>(() => {
+    if (typeof window === "undefined") return DEFAULT_MODEL_ID;
+    try {
+      return window.localStorage.getItem("fmx:model") || DEFAULT_MODEL_ID;
+    } catch {
+      return DEFAULT_MODEL_ID;
+    }
+  });
   const [result, setResult] = useState("");
+  const [resultModel, setResultModel] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("fmx:model", model);
+    } catch {
+      // ignore
+    }
+  }, [model]);
 
   const charCount = text.length;
   const overLimit = charCount > MAX;
@@ -46,13 +75,14 @@ export default function TextWorkspace() {
       const res = await fetch("/api/rewrite", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ text, tone, action }),
+        body: JSON.stringify({ text, tone, action, model }),
       });
-      const data = (await res.json()) as { result?: string; error?: string };
+      const data = (await res.json()) as { result?: string; model?: string; error?: string };
       if (!res.ok || !data.result) {
         throw new Error(data.error || "Request failed.");
       }
       setResult(data.result);
+      setResultModel(data.model || "");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
     } finally {
@@ -74,8 +104,20 @@ export default function TextWorkspace() {
   function handleClear() {
     setText("");
     setResult("");
+    setResultModel("");
     setError("");
     setCopied(false);
+  }
+
+  function handleSwap() {
+    if (!result) return;
+    setText(result);
+    setResult("");
+    setResultModel("");
+  }
+
+  function handleTryAgain() {
+    if (text.trim()) handleImprove();
   }
 
   return (
@@ -101,6 +143,19 @@ export default function TextWorkspace() {
         </p>
       </section>
 
+      <div className="mb-4 flex flex-wrap gap-2">
+        {EXAMPLES.map((ex, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => setText(ex)}
+            className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
+          >
+            Example {i + 1}
+          </button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Input panel */}
         <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -117,15 +172,19 @@ export default function TextWorkspace() {
           />
           <div className="mt-2 flex items-center justify-between text-xs">
             <span id="char-count" className={overLimit ? "text-red-600" : "text-slate-500"}>
-              {charCount} / {MAX} characters
+              {charCount} / {MAX} characters · {wordCount(text)} words
             </span>
             <button
               type="button"
               onClick={handleClear}
               className="text-slate-500 hover:text-slate-700"
             >
-              Clear
+              Clear all
             </button>
+          </div>
+
+          <div className="mt-5">
+            <ModelSelector value={model} onChange={setModel} disabled={loading} />
           </div>
 
           <div className="mt-5">
@@ -174,14 +233,32 @@ export default function TextWorkspace() {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleImprove}
-            disabled={loading}
-            className="mt-6 inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading ? "Improving..." : "Improve text"}
-          </button>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={handleImprove}
+              disabled={loading}
+              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loading ? "Improving..." : "Improve text"}
+            </button>
+            <button
+              type="button"
+              onClick={handleTryAgain}
+              disabled={loading || !text.trim()}
+              className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Try again
+            </button>
+            <button
+              type="button"
+              onClick={handleSwap}
+              disabled={!result}
+              className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Use output as input
+            </button>
+          </div>
 
           {error && (
             <p role="alert" className="mt-3 text-sm text-red-600">
@@ -193,7 +270,10 @@ export default function TextWorkspace() {
         {/* Output panel */}
         <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-2 flex items-center justify-between">
-            <label className="text-sm font-medium text-slate-700">Improved text</label>
+            <label className="text-sm font-medium text-slate-700">
+              Improved text
+              {resultModel ? <span className="ml-2 text-xs font-normal text-slate-400">via {resultModel}</span> : null}
+            </label>
             <button
               type="button"
               onClick={handleCopy}
@@ -203,7 +283,10 @@ export default function TextWorkspace() {
               {copied ? "Copied!" : "Copy"}
             </button>
           </div>
-          <div className="min-h-[220px] flex-1 rounded-xl border border-slate-200 bg-slate-50 p-4 text-slate-900 whitespace-pre-wrap">
+          <div
+            aria-live="polite"
+            className="min-h-[220px] flex-1 rounded-xl border border-slate-200 bg-slate-50 p-4 text-slate-900 whitespace-pre-wrap"
+          >
             {loading ? (
               <span className="text-slate-400">Working on it...</span>
             ) : result ? (
@@ -214,7 +297,7 @@ export default function TextWorkspace() {
           </div>
           {result && (
             <p className="mt-3 text-xs text-slate-500">
-              {result.length} characters
+              {result.length} characters · {wordCount(result)} words
             </p>
           )}
         </div>
