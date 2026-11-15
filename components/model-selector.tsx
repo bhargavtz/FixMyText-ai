@@ -13,7 +13,7 @@ export default function ModelSelector({ value, onChange, disabled }: Props) {
   const selected = AI_MODELS.find((m) => m.id === value) ?? AI_MODELS[0];
   return (
     <div>
-      <label htmlFor="model-select" className="mb-2 block text-sm font-medium text-slate-700">
+      <label htmlFor="model-select" className="mb-2 block text-sm font-medium text-foreground">
         AI model
       </label>
       <select
@@ -22,7 +22,7 @@ export default function ModelSelector({ value, onChange, disabled }: Props) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
-        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:opacity-60"
+        className="w-full rounded-2xl border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:opacity-60"
       >
         {AI_MODELS.map((m: AIModel) => (
           <option key={m.id} value={m.id}>
@@ -30,7 +30,7 @@ export default function ModelSelector({ value, onChange, disabled }: Props) {
           </option>
         ))}
       </select>
-      <p className="mt-1 text-xs text-slate-500">{selected.description}</p>
+      <p className="mt-1 text-xs text-muted">{selected.description}</p>
     </div>
   );
 }

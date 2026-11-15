@@ -121,192 +121,196 @@ export default function TextWorkspace() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-      <header className="mb-10 flex flex-col gap-2">
-        <div className="flex items-center gap-2">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white font-bold">
-            F
-          </span>
-          <div>
-            <h1 className="text-lg font-semibold text-slate-900">FixMyText AI</h1>
-            <p className="text-sm text-slate-500">AI writing assistant</p>
-          </div>
-        </div>
-      </header>
-
-      <section className="mb-8 text-center sm:text-left">
-        <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-          Say it better. In seconds.
-        </h2>
-        <p className="mt-3 text-lg text-slate-600">
-          Improve emails, messages, and posts without losing your meaning.
-        </p>
-      </section>
-
-      <div className="mb-4 flex flex-wrap gap-2">
-        {EXAMPLES.map((ex, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => setText(ex)}
-            className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
-          >
-            Example {i + 1}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Input panel */}
-        <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <label htmlFor="input-text" className="mb-2 text-sm font-medium text-slate-700">
-            Your text
-          </label>
-          <textarea
-            id="input-text"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Paste or type your text here..."
-            spellCheck={false}
-            className="min-h-[220px] w-full resize-y rounded-xl border border-slate-200 bg-slate-50 p-4 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            aria-describedby="char-count"
-          />
-          <div className="mt-2 flex items-center justify-between text-xs">
-            <span id="char-count" className={overLimit ? "text-red-600" : "text-slate-500"}>
-              {charCount} / {MAX} characters · {wordCount(text)} words
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8 sm:py-12">
+        <header className="mb-12 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-accent text-white font-semibold shadow-sm">
+              F
             </span>
-            <button
-              type="button"
-              onClick={handleClear}
-              className="text-slate-500 hover:text-slate-700"
-            >
-              Clear all
-            </button>
-          </div>
-
-          <div className="mt-5">
-            <ModelSelector value={model} onChange={setModel} disabled={loading} />
-          </div>
-
-          <div className="mt-5">
-            <p className="mb-2 text-sm font-medium text-slate-700">Tone</p>
-            <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Tone">
-              {TONES.map((t) => (
-                <button
-                  key={t.value}
-                  type="button"
-                  role="radio"
-                  aria-checked={tone === t.value}
-                  onClick={() => setTone(t.value)}
-                  className={
-                    "rounded-full border px-4 py-1.5 text-sm font-medium transition " +
-                    (tone === t.value
-                      ? "border-blue-600 bg-blue-600 text-white"
-                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300")
-                  }
-                >
-                  {t.label}
-                </button>
-              ))}
+            <div>
+              <p className="text-sm font-semibold leading-tight">FixMyText AI</p>
+              <p className="text-xs text-muted">AI writing assistant</p>
             </div>
           </div>
+        </header>
 
-          <div className="mt-5">
-            <p className="mb-2 text-sm font-medium text-slate-700">Action</p>
-            <div className="inline-flex rounded-xl border border-slate-200 bg-slate-100 p-1" role="radiogroup" aria-label="Action">
-              {ACTIONS.map((a) => (
-                <button
-                  key={a.value}
-                  type="button"
-                  role="radio"
-                  aria-checked={action === a.value}
-                  onClick={() => setAction(a.value)}
-                  className={
-                    "rounded-lg px-4 py-1.5 text-sm font-medium transition " +
-                    (action === a.value
-                      ? "bg-white text-slate-900 shadow-sm"
-                      : "text-slate-600 hover:text-slate-900")
-                  }
-                >
-                  {a.label}
-                </button>
-              ))}
-            </div>
-          </div>
+        <section className="mb-10 max-w-3xl">
+          <h1 className="font-display text-4xl leading-[1.05] tracking-tight text-foreground sm:text-6xl">
+            Say it better. In seconds.
+          </h1>
+          <p className="mt-4 text-lg text-muted">
+            Improve emails, messages, and posts without losing your meaning.
+          </p>
+          <div className="mt-6 h-px w-24 bg-border" />
+        </section>
 
-          <div className="mt-6 flex flex-wrap gap-3">
+        <div className="mb-6 flex flex-wrap gap-2">
+          {EXAMPLES.map((ex, i) => (
             <button
+              key={i}
               type="button"
-              onClick={handleImprove}
-              disabled={loading}
-              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              onClick={() => setText(ex)}
+              className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-muted transition hover:border-accent hover:text-foreground"
             >
-              {loading ? "Improving..." : "Improve text"}
+              Try example {i + 1}
             </button>
-            <button
-              type="button"
-              onClick={handleTryAgain}
-              disabled={loading || !text.trim()}
-              className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Try again
-            </button>
-            <button
-              type="button"
-              onClick={handleSwap}
-              disabled={!result}
-              className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Use output as input
-            </button>
-          </div>
-
-          {error && (
-            <p role="alert" className="mt-3 text-sm text-red-600">
-              {error}
-            </p>
-          )}
+          ))}
         </div>
 
-        {/* Output panel */}
-        <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="mb-2 flex items-center justify-between">
-            <label className="text-sm font-medium text-slate-700">
-              Improved text
-              {resultModel ? <span className="ml-2 text-xs font-normal text-slate-400">via {resultModel}</span> : null}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {/* Input panel */}
+          <div className="flex flex-col rounded-3xl border border-border bg-surface p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+            <label htmlFor="input-text" className="mb-2 text-sm font-medium text-foreground">
+              Your text
             </label>
-            <button
-              type="button"
-              onClick={handleCopy}
-              disabled={!result}
-              className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {copied ? "Copied!" : "Copy"}
-            </button>
-          </div>
-          <div
-            aria-live="polite"
-            className="min-h-[220px] flex-1 rounded-xl border border-slate-200 bg-slate-50 p-4 text-slate-900 whitespace-pre-wrap"
-          >
-            {loading ? (
-              <span className="text-slate-400">Working on it...</span>
-            ) : result ? (
-              result
-            ) : (
-              <span className="text-slate-400">Your improved text will appear here.</span>
+            <textarea
+              id="input-text"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              spellCheck={false}
+              placeholder="Paste or type your text here..."
+              className="min-h-[240px] w-full resize-y rounded-2xl border border-border bg-background p-4 text-foreground placeholder-muted/60 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+              aria-describedby="char-count"
+            />
+            <div className="mt-2 flex items-center justify-between text-xs">
+              <span id="char-count" className={overLimit ? "text-danger" : "text-muted"}>
+                {charCount} / {MAX} characters · {wordCount(text)} words
+              </span>
+              <button
+                type="button"
+                onClick={handleClear}
+                className="text-muted transition hover:text-foreground"
+              >
+                Clear all
+              </button>
+            </div>
+
+            <div className="mt-6">
+              <ModelSelector value={model} onChange={setModel} disabled={loading} />
+            </div>
+
+            <div className="mt-6">
+              <p className="mb-2 text-sm font-medium text-foreground">Tone</p>
+              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Tone">
+                {TONES.map((t) => (
+                  <button
+                    key={t.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={tone === t.value}
+                    onClick={() => setTone(t.value)}
+                    className={
+                      "rounded-full border px-4 py-1.5 text-sm font-medium transition " +
+                      (tone === t.value
+                        ? "border-accent bg-accent text-white"
+                        : "border-border bg-surface text-foreground hover:border-accent/40")
+                    }
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <p className="mb-2 text-sm font-medium text-foreground">Action</p>
+              <div className="inline-flex rounded-2xl border border-border bg-background p-1" role="radiogroup" aria-label="Action">
+                {ACTIONS.map((a) => (
+                  <button
+                    key={a.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={action === a.value}
+                    onClick={() => setAction(a.value)}
+                    className={
+                      "rounded-xl px-4 py-1.5 text-sm font-medium transition " +
+                      (action === a.value
+                        ? "bg-surface text-foreground shadow-sm"
+                        : "text-muted hover:text-foreground")
+                    }
+                  >
+                    {a.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={handleImprove}
+                disabled={loading}
+                className="inline-flex items-center justify-center rounded-2xl bg-accent px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {loading ? "Improving..." : "Improve text"}
+              </button>
+              <button
+                type="button"
+                onClick={handleTryAgain}
+                disabled={loading || !text.trim()}
+                className="inline-flex items-center justify-center rounded-2xl border border-border px-4 py-3 text-sm font-medium text-foreground transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Try again
+              </button>
+              <button
+                type="button"
+                onClick={handleSwap}
+                disabled={!result}
+                className="inline-flex items-center justify-center rounded-2xl border border-border px-4 py-3 text-sm font-medium text-foreground transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Use output as input
+              </button>
+            </div>
+
+            {error && (
+              <p role="alert" className="mt-4 text-sm text-danger">
+                {error}
+              </p>
             )}
           </div>
-          {result && (
-            <p className="mt-3 text-xs text-slate-500">
-              {result.length} characters · {wordCount(result)} words
-            </p>
-          )}
-        </div>
-      </div>
 
-      <footer className="mt-10 text-center text-xs text-slate-400">
-        AI can make mistakes. Review before sending.
-      </footer>
+          {/* Output panel */}
+          <div className="flex flex-col rounded-3xl border border-border bg-surface p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-sm font-medium text-foreground">
+                Improved text
+                {resultModel ? <span className="ml-2 text-xs font-normal text-muted">via {resultModel}</span> : null}
+              </p>
+              <button
+                type="button"
+                onClick={handleCopy}
+                disabled={!result}
+                className="rounded-xl border border-border px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {copied ? "Copied" : "Copy"}
+              </button>
+            </div>
+            <div
+              aria-live="polite"
+              className="min-h-[240px] flex-1 rounded-2xl border border-border bg-background p-4 text-foreground whitespace-pre-wrap"
+            >
+              {loading ? (
+                <span className="text-muted">Working on it...</span>
+              ) : result ? (
+                result
+              ) : (
+                <span className="text-muted">Your improved text will appear here.</span>
+              )}
+            </div>
+            {result && (
+              <p className="mt-3 text-xs text-muted">
+                {result.length} characters · {wordCount(result)} words
+              </p>
+            )}
+          </div>
+        </div>
+
+        <footer className="mt-12 flex items-center justify-between border-t border-border pt-6 text-xs text-muted">
+          <span>FixMyText AI</span>
+          <span>AI can make mistakes. Review before sending.</span>
+        </footer>
+      </div>
     </div>
   );
 }
