@@ -167,6 +167,7 @@ export default function TextWorkspace() {
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Paste or type your text here..."
+            spellCheck={false}
             className="min-h-[220px] w-full resize-y rounded-xl border border-slate-200 bg-slate-50 p-4 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
             aria-describedby="char-count"
           />

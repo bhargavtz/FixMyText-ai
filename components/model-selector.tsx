@@ -18,6 +18,7 @@ export default function ModelSelector({ value, onChange, disabled }: Props) {
       </label>
       <select
         id="model-select"
+        suppressHydrationWarning
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
