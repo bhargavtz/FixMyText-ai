@@ -27,7 +27,8 @@ export default function ModelSelector({ models, value, onChange, disabled }: Pro
 
   return (
     <div>
-      <label htmlFor="model-select" className="mb-2 block text-sm font-medium text-foreground">
+      <label htmlFor="model-select" className="mb-2 flex items-center gap-1.5 text-sm font-medium text-foreground">
+        <i className="bi bi-cpu" aria-hidden="true" />
         AI model
       </label>
       <select

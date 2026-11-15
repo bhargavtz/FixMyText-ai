@@ -171,8 +171,8 @@ export default function TextWorkspace({ models, defaultModel }: Props) {
       <div className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8 sm:py-12">
         <header className="mb-12 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-accent text-white font-semibold shadow-sm">
-              F
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-accent text-white shadow-sm">
+              <i className="bi bi-stars text-lg" aria-hidden="true" />
             </span>
             <div>
               <p className="text-sm font-semibold leading-tight">FixMyText AI</p>
@@ -192,15 +192,19 @@ export default function TextWorkspace({ models, defaultModel }: Props) {
         </section>
 
         <div className="mb-6">
-          <p className="mb-2 text-sm font-medium text-foreground">Start from an example</p>
+          <p className="mb-2 flex items-center gap-1.5 text-sm font-medium text-foreground">
+            <i className="bi bi-lightbulb" aria-hidden="true" />
+            Start from an example
+          </p>
           <div className="flex flex-wrap gap-2">
             {EXAMPLES.map((ex) => (
               <button
                 key={ex.label}
                 type="button"
                 onClick={() => setText(ex.text)}
-                className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-muted transition hover:border-accent hover:text-foreground"
+                className="inline-flex items-center gap-1 rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-muted transition hover:border-accent hover:text-foreground"
               >
+                <i className="bi bi-arrow-up-right" aria-hidden="true" />
                 {ex.label}
               </button>
             ))}
@@ -210,7 +214,8 @@ export default function TextWorkspace({ models, defaultModel }: Props) {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Input panel */}
           <div className="flex flex-col rounded-3xl border border-border bg-surface p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-            <label htmlFor="input-text" className="mb-2 text-sm font-medium text-foreground">
+            <label htmlFor="input-text" className="mb-2 flex items-center gap-1.5 text-sm font-medium text-foreground">
+              <i className="bi bi-pencil-square" aria-hidden="true" />
               Your text
             </label>
             <textarea
@@ -229,8 +234,9 @@ export default function TextWorkspace({ models, defaultModel }: Props) {
               <button
                 type="button"
                 onClick={handleClear}
-                className="text-muted transition hover:text-foreground"
+                className="inline-flex items-center gap-1 text-muted transition hover:text-foreground"
               >
+                <i className="bi bi-trash3" aria-hidden="true" />
                 Clear all
               </button>
             </div>
@@ -240,7 +246,10 @@ export default function TextWorkspace({ models, defaultModel }: Props) {
             </div>
 
             <div className="mt-6">
-              <p className="mb-2 text-sm font-medium text-foreground">Tone</p>
+              <p className="mb-2 flex items-center gap-1.5 text-sm font-medium text-foreground">
+                <i className="bi bi-palette" aria-hidden="true" />
+                Tone
+              </p>
               <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Tone">
                 {TONES.map((t) => (
                   <button
@@ -263,7 +272,10 @@ export default function TextWorkspace({ models, defaultModel }: Props) {
             </div>
 
             <div className="mt-6">
-              <p className="mb-2 text-sm font-medium text-foreground">Action</p>
+              <p className="mb-2 flex items-center gap-1.5 text-sm font-medium text-foreground">
+                <i className="bi bi-sliders" aria-hidden="true" />
+                Action
+              </p>
               <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Action">
                 {ACTIONS.map((a) => (
                   <button
@@ -290,24 +302,27 @@ export default function TextWorkspace({ models, defaultModel }: Props) {
                 type="button"
                 onClick={handleImprove}
                 disabled={loading}
-                className="inline-flex items-center justify-center rounded-2xl bg-accent px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-accent px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
               >
+                <i className={loading ? "bi bi-hourglass-split" : "bi bi-stars"} aria-hidden="true" />
                 {loading ? "Improving..." : "Improve text"}
               </button>
               <button
                 type="button"
                 onClick={handleTryAgain}
                 disabled={loading || !text.trim()}
-                className="inline-flex items-center justify-center rounded-2xl border border-border px-4 py-3 text-sm font-medium text-foreground transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border px-4 py-3 text-sm font-medium text-foreground transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
               >
+                <i className="bi bi-arrow-clockwise" aria-hidden="true" />
                 Try again
               </button>
               <button
                 type="button"
                 onClick={handleSwap}
                 disabled={!result}
-                className="inline-flex items-center justify-center rounded-2xl border border-border px-4 py-3 text-sm font-medium text-foreground transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border px-4 py-3 text-sm font-medium text-foreground transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
               >
+                <i className="bi bi-arrow-left-right" aria-hidden="true" />
                 Use output as input
               </button>
             </div>
@@ -322,7 +337,8 @@ export default function TextWorkspace({ models, defaultModel }: Props) {
           {/* Output panel */}
           <div className="flex flex-col rounded-3xl border border-border bg-surface p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-foreground">
+              <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                <i className="bi bi-magic" aria-hidden="true" />
                 Improved text
                 {resultModelName ? (
                   <span className="ml-2 text-xs font-normal text-muted">via {resultModelName}</span>
@@ -332,8 +348,9 @@ export default function TextWorkspace({ models, defaultModel }: Props) {
                 type="button"
                 onClick={handleCopy}
                 disabled={!result}
-                className="rounded-xl border border-border px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
               >
+                <i className={copied ? "bi bi-check2" : "bi bi-clipboard"} aria-hidden="true" />
                 {copied ? "Copied" : "Copy"}
               </button>
             </div>
@@ -359,7 +376,10 @@ export default function TextWorkspace({ models, defaultModel }: Props) {
 
         <footer className="mt-12 flex items-center justify-between border-t border-border pt-6 text-xs text-muted">
           <span>FixMyText AI</span>
-          <span>AI can make mistakes. Review before sending.</span>
+          <span className="inline-flex items-center gap-1.5">
+            <i className="bi bi-info-circle" aria-hidden="true" />
+            AI can make mistakes. Review before sending.
+          </span>
         </footer>
       </div>
     </div>
