@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Manrope } from "next/font/google";
 import "./globals.css";
 
@@ -14,24 +14,35 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "FixMyText AI",
-  description: "Improve emails, messages, and posts without losing your meaning.",
+  title: "FixMyText AI — free AI writing assistant",
+  description:
+    "Free AI writing tool: improve, fix grammar, shorten, summarize, translate, write emails and replies — no sign-up.",
 };
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f4f2ec" },
+    { media: "(prefers-color-scheme: dark)", color: "#080f1c" },
+  ],
+};
+
+// Applies the saved/system theme before first paint to avoid a flash.
+const themeScript = `(function(){try{var t=localStorage.getItem("fmx:theme");if(t!=="light"&&t!=="dark"){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}document.documentElement.dataset.theme=t}catch(e){}})();`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${manrope.variable} h-full antialiased`}
+      suppressHydrationWarning
+      className={`${fraunces.variable} ${manrope.variable} antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-        <link
-          rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-          precedence="default"
-        />
-        {children}
-      </body>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body>{children}</body>
     </html>
   );
 }

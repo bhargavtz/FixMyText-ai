@@ -1,33 +1,153 @@
 @import "tailwindcss";
 
-@theme {
-  --color-background: #f4f7fb;
-  --color-foreground: #0b1f3a;
-  --color-surface: #ffffff;
-  --color-muted: #475569;
-  --color-border: #d7e0ec;
-  --color-accent: #2563eb;
-  --color-accent-hover: #1d4ed8;
-  --color-danger: #dc2626;
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-  --font-sans: var(--font-manrope);
-  --font-display: var(--font-fraunces);
-  --font-mono: ui-monospace;
+:root {
+  --bg: #f4f2ec;
+  --surface: #fffefb;
+  --surface-2: #f0ede5;
+  --ink: #0b1f3a;
+  --muted: #5a6478;
+  --line: #e3ded2;
+  --line-strong: #cfc8b8;
+  --accent: #2456f5;
+  --accent-hover: #1a44d4;
+  --accent-ink: #ffffff;
+  --accent-soft: #e5ebff;
+  --danger: #b42318;
+  --danger-soft: #fdece9;
+  --add-bg: #dcf3e3;
+  --add-ink: #0f5a2c;
+  --del-bg: #fbe2df;
+  --del-ink: #8f1d14;
+  --dot: rgba(11, 31, 58, 0.07);
+  --shadow: 0 1px 0 rgba(11, 31, 58, 0.03), 0 12px 32px -18px rgba(11, 31, 58, 0.22);
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --bg: #080f1c;
+  --surface: #0e182b;
+  --surface-2: #132037;
+  --ink: #e7ecf6;
+  --muted: #94a1b9;
+  --line: #1f2d47;
+  --line-strong: #2d3e5f;
+  --accent: #6b93ff;
+  --accent-hover: #8aaaff;
+  --accent-ink: #061029;
+  --accent-soft: #17264b;
+  --danger: #ff8a7a;
+  --danger-soft: #3a1714;
+  --add-bg: #12351f;
+  --add-ink: #8fe0aa;
+  --del-bg: #3d1916;
+  --del-ink: #ffa89c;
+  --dot: rgba(231, 236, 246, 0.05);
+  --shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 16px 40px -20px rgba(0, 0, 0, 0.7);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-add-bg: var(--add-bg);
+  --color-add-ink: var(--add-ink);
+  --color-del-bg: var(--del-bg);
+  --color-del-ink: var(--del-ink);
+
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, serif;
+}
+
+html,
+body {
+  height: 100%;
 }
 
 body {
-  background: var(--color-background);
-  color: var(--color-foreground);
+  background-color: var(--bg);
+  background-image: radial-gradient(var(--dot) 1px, transparent 1px);
+  background-size: 18px 18px;
+  color: var(--ink);
   font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .font-display {
-  font-family: var(--font-fraunces), "Times New Roman", serif;
-  font-variation-settings: "opsz" 72, "SOFT" 40;
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-variation-settings: "opsz" 96, "SOFT" 50;
+}
+
+/* Horizontal chip rails: scroll without a visible scrollbar, fade at the edges. */
+.rail {
+  scrollbar-width: none;
+  mask-image: linear-gradient(to right, transparent 0, #000 12px, #000 calc(100% - 24px), transparent 100%);
+}
+.rail::-webkit-scrollbar {
+  display: none;
+}
+
+.thin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise {
+  animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -400px 0;
+  }
+  to {
+    background-position: 400px 0;
+  }
+}
+.shimmer {
+  background: linear-gradient(90deg, var(--surface-2) 0%, var(--line) 50%, var(--surface-2) 100%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+.slide-in {
+  animation: slide-in 0.25s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

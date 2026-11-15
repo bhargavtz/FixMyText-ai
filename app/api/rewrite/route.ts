@@ -17,12 +17,12 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { result, modelId } = await rewriteText(parsed.data);
-    return NextResponse.json({ result, model: modelId });
+    const { result, modelId, demo } = await rewriteText(parsed.data);
+    return NextResponse.json({ result, model: modelId, demo });
   } catch (err) {
     console.error("rewrite failed", err);
     const message =
-      err instanceof Error
+      err instanceof Error && err.name !== "AbortError"
         ? err.message
         : "The text could not be improved. Please try again.";
     return NextResponse.json({ error: message }, { status: 502 });

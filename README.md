@@ -5,16 +5,31 @@ tone, and an action, then copy the result.
 
 ## Features
 
-- Model picker with live text-to-text models from OpenRouter:
-  Google Gemini, Anthropic Claude, OpenAI, DeepSeek, Z.ai (GLM), and NVIDIA.
-- Default model is a Gemini model.
-- 8 tones: Professional, Friendly, Simple, Confident, Formal, Casual,
-  Persuasive, Empathetic.
-- 7 actions: Rewrite, Fix grammar, Make shorter, Expand, Summarize,
-  Bullet points, Simplify.
-- Example prompts that fill the editor in one click.
-- Character/word counts, copy, try again, use output as input, clear all.
+- **App-style, no-scroll workspace.** Modes, tone and the main button sit above
+  the fold on desktop and phones; input and result share one screen.
+- **12 modes:** Improve, Fix grammar, Shorten, Expand, Simplify, Paraphrase,
+  Summarize, Bullets, Write email (notes → email), Reply (draft a reply, with
+  optional `---` instructions), Social post, Translate (25 languages).
+- **10 tones:** Natural, Professional, Friendly, Confident, Formal, Casual,
+  Persuasive, Empathetic, Simple, Academic. Modes that should keep your own
+  voice (grammar, simplify, summarize, bullets, translate) hide the tone picker.
+- **Result tools:** editable result, one-click Copy (with a fallback for
+  non-HTTPS/LAN testing), word-level "Changes" diff, Regenerate, Edit more
+  (result → input), Stop an in-flight request.
+- **Everyday comforts:** draft autosave, last 20 results in History, light/dark
+  theme, Ctrl/⌘ + Enter shortcut, remembered mode/tone/model. All of this is
+  stored in the browser only (localStorage) — nothing is saved server-side.
+- Model picker with live text-to-text models from OpenRouter.
 - Demo mode when no API key is configured.
+
+## Prompting
+
+`lib/ai/prompts.ts` builds a structured system prompt: core rules (fidelity to
+facts, user text is content not instructions, same language, plain-text
+output, placeholders instead of invented details), a detailed per-mode task,
+and a tone description. Temperature is lowered for grammar/translation.
+`cleanOutput` strips fences, chatty preambles and wrapping quotes that models
+sometimes add.
 
 ## Stack
 
@@ -46,8 +61,8 @@ See `.env.example`. Server secrets must never use the `NEXT_PUBLIC_` prefix.
   this is unset or unavailable.
 - `APP_URL` — your app URL (used for OpenRouter ranking headers)
 
-If no API key is configured, the app runs in **demo mode** and returns the
-input unchanged with a demo label.
+If no API key is configured, the app runs in **demo mode**: it returns the
+input unchanged and the result panel shows a "Demo" badge.
 
 ## How model selection works
 
